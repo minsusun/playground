@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NSwag.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +8,28 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<TodoDb>(opt => opt.UseInMemoryDatabase("TodoList"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+builder.Services.AddEndpointsApiExplorer();     // API Explorer: Service that provides metadata of HTTP API(will be used by Swagger)
+builder.Services.AddOpenApiDocument(config =>
+{
+    config.DocumentName = "TodoApi";
+    config.Title = "TodoAPI v1";
+    config.Version = "v1";
+});     // Add Swagger OpenAPI document generator to the app
+
 var app = builder.Build();
+
+// Use Swagger in only development mode
+if (app.Environment.IsDevelopment())
+{
+    app.UseOpenApi();
+    app.UseSwaggerUi(config =>
+    {
+        config.DocumentTitle = "TodoAPI";
+        config.Path = "/swagger";
+        config.DocumentPath = "/swagger/{documentName}/swagger.json";
+        config.DocExpansion = "list";
+    });
+}
 
 app.MapGet("/todoitems", async (TodoDb db) =>
     await db.Todos.ToListAsync());
