@@ -166,3 +166,5 @@ Temporary Items
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+.idea/*
