@@ -2,6 +2,8 @@
 
 *.secret.md
 
+*.zip
+
 # General
 .DS_Store
 .AppleDouble
