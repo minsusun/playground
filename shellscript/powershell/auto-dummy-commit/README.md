@@ -1,0 +1,1 @@
+do `./script.ps1`

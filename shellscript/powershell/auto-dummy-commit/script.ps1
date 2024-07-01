@@ -1,3 +1,6 @@
+# This script creates dummy commits(some datetime texts) every 30 seconds
+# This can be used as stress test for github commits or PRs
+
 while($true)
 {
     $text = (Get-Date -Format "yyMMdd-HHmmss")
