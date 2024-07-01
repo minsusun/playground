@@ -1,0 +1,1 @@
+do `/bin/sh ./script.sh`
