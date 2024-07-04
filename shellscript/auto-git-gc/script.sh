@@ -10,7 +10,8 @@ do
     chmod +rx /tmp/_argocd-repo/*
     cd /tmp/_argocd-repo/$(ls /tmp/_argocd-repo -l | grep '^d' | awk '{print $9}');
     before=$(du /tmp/_argocd-repo -h --max-depth=1 | head -n 1 | awk '{print $1}');
-    git gc;
+    git reflog expire --all --expire=now;
+    git gc --prune=now;
     after=$(du /tmp/_argocd-repo -h --max-depth=1 | head -n 1 | awk '{print $1}');
     if [ "$before" = "$after" ]; then
         echo $(date) "| git gc with no change";
