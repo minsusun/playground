@@ -1,0 +1,1 @@
+hexdump -vn100 -e'25/4 "%08x" 1 "\n"' /dev/urandom
