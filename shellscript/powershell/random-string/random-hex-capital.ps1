@@ -1,4 +1,4 @@
 # PowerShell >= 7.4
-# [A-Za-z0-9]
+# base64
 
--join (1..100 | ForEach {(('0'..'9') + ('A'..'Z') + ('a'..'z') | Get-SecureRandom)})
+[Convert]::ToBase64String(((1..100) | % { "{0:d}" -f [byte]( Get-SecureRandom -min 0 -max 128 )}))
