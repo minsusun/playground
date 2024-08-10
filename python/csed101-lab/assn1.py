@@ -2,6 +2,9 @@ import random
 
 random_seed = 2024
 
+WORD_LENGTH = 5
+DEFAULT_LIFE = HISTORY_LENGTH = 6
+
 COLOR_CODE_GREEN = 42
 COLOR_CODE_YELLOW = 43
 COLOR_CODE_GRAY = 47
@@ -16,8 +19,8 @@ def print_status(history, life, answer):
     print("History:")
     for word in history:
         print(get_colored_string(word, answer))
-    for _ in range(6 - len(history)):
-        print(" _ " * 5)
+    for _ in range(HISTORY_LENGTH - len(history)):
+        print(" _ " * WORD_LENGTH)
     print()
     print("Life:", life)
     print("--------------------")
@@ -25,6 +28,8 @@ def print_status(history, life, answer):
 # word, answer -> len == 5
 # lower case
 def get_colored_string(word, answer):
+    assert len(word) == len(answer) == WORD_LENGTH
+
     result = ""
     for i, j in zip(word, answer):
         if i == j:
@@ -36,7 +41,7 @@ def get_colored_string(word, answer):
     return result
 
 def is_valid(word, word_list, history):
-    if len(word) != 5:
+    if len(word) != WORD_LENGTH:
         print("Error: Input word is not a five-letter word!")
         print("Choose another word!")
         return False
@@ -91,7 +96,7 @@ print("Wordle game starts!")
 print()
 
 wordle = random.choice(word_list)
-life = 6
+life = DEFAULT_LIFE
 history = []
 
 while True:
@@ -124,7 +129,7 @@ while True:
     print()
     if play == "yes":
         wordle = random.choice(word_list)
-        life = 6
+        life = DEFAULT_LIFE
         history = []
         continue
     else:
