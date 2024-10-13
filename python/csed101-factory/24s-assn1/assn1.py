@@ -112,7 +112,7 @@ while True:
 
     history.append(word)
 
-    if word == wordle:
+    if is_correct(word, wordle):
         print_status(history, life, wordle)
         print("Great! You got the answer")
         print("The answer was", wordle)
