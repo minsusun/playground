@@ -230,7 +230,7 @@ while True:
                 break
 
         board = initialize_board(n)
-        current_move = 0
+        current_move = 1
     elif user_input == "2":
         print()
         print("Enter the filename to load your game: ")
