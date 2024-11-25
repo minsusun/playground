@@ -137,12 +137,17 @@ class Enemy:
     def attack(self, player):
         a, b = [random.randint(10, 99) for _ in range(2)]
         print(f"{self.name} 이 문제를 냅니다.. {a} + {b} = ?")
+
         c = int(input().strip())
+        print()
+
         if a + b != c:
             print(f"[Wrong] {self.name}에게 라이프 2개를 빼앗겼습니다.")
+            print()
             player - 2
         else:
             print(f"[Correct] {self.name}이 인사하며 떠납니다.")
+            print()
 
 
 class Helper:
@@ -153,12 +158,17 @@ class Helper:
     def help(self, player):
         a, b = [random.randint(10, 99) for _ in range(2)]
         print(f"{self.name} 이 문제를 냅니다.. {a} + {b} = ?")
+
         c = int(input().strip())
+        print()
+
         if a + b == c:
             print(f"[Correct] {self.name}으로부터 라이프 1개를 획득하였습니다.")
+            print()
             player + 1
         else:
             print(f"[Wrong] {self.name}이 인사하며 떠납니다.")
+            print()
 
 
 class EasyMap:
@@ -228,7 +238,7 @@ class EasyMap:
                         enemy.attack(self.player)
                 if self.player.pos == self.mystery.pos:
                     self.mystery.attack_or_help(self.player)
-                
+
                 if self.player.pos == 15:
                     self.player.status = "승리"
                     prev_msg = "[성공]마지막 칸에 도달하셨습니다!"
@@ -281,6 +291,7 @@ class Mystery(Enemy, Helper):
             super().attack(player)
         else:
             super().help(player)
+
 
 if __name__ == "__main__":
     board = Dashboard()
