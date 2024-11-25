@@ -93,7 +93,7 @@ class Dashboard:
                 if len(result) != 0:
                     print("이미 존재하는 플레이어입니다.")
                     print()
-                    break
+                    continue
 
                 print("맵을 선택하세요.")
                 print("1. Easy")
@@ -121,7 +121,7 @@ class Dashboard:
                 if len(result) == 0:
                     print("존재하지 않는 플레이어입니다.")
                     print()
-                    break
+                    continue
 
                 result[0][1].run()
 
@@ -142,7 +142,7 @@ class Enemy:
             print(f"[Wrong] {self.name}에게 라이프 2개를 빼앗겼습니다.")
             player - 2
         else:
-            print(f"[Correct] {self.name}이 인사하면 떠납니다.")
+            print(f"[Correct] {self.name}이 인사하며 떠납니다.")
 
 
 class Helper:
@@ -173,7 +173,7 @@ class EasyMap:
             Helper(f"Helper_{i}", idx) for i, idx in enumerate(sorted(tmp[2:4]))
         ]
         self.helper_pos_list = [helper.pos for helper in self.helpers]
-        self.mystery = Mystery(f"Enemy", tmp[-1])
+        self.mystery = Mystery(f"Mystery", tmp[-1])
         self.mode = "Easy"
 
     def show_map(self):
@@ -195,8 +195,13 @@ class EasyMap:
         print()
 
     def run(self):
+        prev_msg = ""
         while True:
             self.show_map()
+
+            if prev_msg:
+                print(prev_msg)
+                print()
 
             print("다음 중 하나를 고르시오.")
             print("1. 한 칸 전진")
@@ -206,7 +211,15 @@ class EasyMap:
             print()
 
             if user_input == "1":
+                if self.player.status == "성공":
+                    prev_msg = "[성공] 마지막 칸에 도달하셨습니다!"
+                    continue
+                elif self.player.status == "실패":
+                    prev_msg = "[실패] 더 이상 전진할 수 없습니다."
+                    continue
+
                 self.player.pos = min(self.player.pos + 1, 15)
+
                 for helper in self.helpers:
                     if self.player.pos == helper.pos:
                         helper.help(self.player)
@@ -215,10 +228,15 @@ class EasyMap:
                         enemy.attack(self.player)
                 if self.player.pos == self.mystery.pos:
                     self.mystery.attack_or_help(self.player)
+                
                 if self.player.pos == 15:
-                    self.player.status = "승 리"
+                    self.player.status = "승리"
+                    prev_msg = "[성공]마지막 칸에 도달하셨습니다!"
                 elif self.player.life == 0:
-                    self.player.status = "패 배"
+                    self.player.status = "실패"
+                    prev_msg = "[실패] 더 이상 전진할 수 없습니다."
+                else:
+                    prev_msg = ""
             elif user_input == "2":
                 break
 
@@ -228,14 +246,14 @@ class HardMap(EasyMap):
         tmp = random.sample([i for i in range(2, 15)], 6)
         self.player = player
         self.enemies = [
-            Enemy(f"Enemy_{i}", idx) for i, idx in enumerate(sorted(tmp[:3]))
+            Enemy(f"Enemy_{i+1}", idx) for i, idx in enumerate(sorted(tmp[:3]))
         ]
         self.enemy_pos_list = [enemy.pos for enemy in self.enemies]
         self.helpers = [
-            Helper(f"Helper_{i}", idx) for i, idx in enumerate(sorted(tmp[3:5]))
+            Helper(f"Helper_{i+1}", idx) for i, idx in enumerate(sorted(tmp[3:5]))
         ]
         self.helper_pos_list = [helper.pos for helper in self.helpers]
-        self.mystery = Mystery(f"Enemy", tmp[-1])
+        self.mystery = Mystery(f"Mystery", tmp[-1])
         self.mode = "Hard"
 
 
@@ -243,7 +261,7 @@ class Player:
     def __init__(self, name):
         self.name = name
         self.pos = 1
-        self.status = "진 행"
+        self.status = "진행"
         self.life = 3
 
     def __add__(self, n):
@@ -264,6 +282,6 @@ class Mystery(Enemy, Helper):
         else:
             super().help(player)
 
-
-board = Dashboard()
-board.run()
+if __name__ == "__main__":
+    board = Dashboard()
+    board.run()
