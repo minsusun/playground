@@ -1,0 +1,38 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Problem 1 Tests
+      id: problem-1-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Problem 1 Tests
+        setup-command: ''
+        command: gradle test --tests ExpressionAddOperatorTest
+        timeout: 10
+    - name: Problem 2 Tests
+      id: problem-2-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Problem 2 Tests
+        setup-command: ''
+        command: gradle test --tests EnglishNumberTranslatorTest
+        timeout: 10
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        PROBLEM-1-TESTS_RESULTS: "${{steps.problem-1-tests.outputs.result}}"
+        PROBLEM-2-TESTS_RESULTS: "${{steps.problem-2-tests.outputs.result}}"
+      with:
+        runners: problem-1-tests,problem-2-tests
