@@ -15,22 +15,32 @@ struct Stack {
 
     void push(string expr, int prec) {
         // TODO
+        Node* n = new Node(expr, prec);
+        n -> next = top;
+        top = n;
     }
 
     Node* pop() {
         // TODO
-        return nullptr;
+        Node* result = top;
+        if (top != nullptr) {
+            top = top -> next;
+        }
+        return result;
     }
 
     bool isEmpty() {
         // TODO
-        return true;
+        return top == nullptr;
     }
 };
 
 int precedence(char op) {
     // TODO
-    return 0;
+    if (op == '+' || op == '-') {
+        return 1;
+    }
+    return 2;
 }
 
 int main() {
@@ -39,7 +49,35 @@ int main() {
 
     Stack s;
 
-    // TODO: implement postfix to minimal infix conversion
+    for (char c : postfix) {
+        if (c != '+' && c != '-' &&  c != '*' && c != '/') {
+            s.push(string(1, c), 3);
+        } else {
+            Node* right = s.pop();
+            Node* left = s.pop();
+            int currPrec = precedence(c);
+
+            string leftExpr = left->expr;
+            if (left->prec < currPrec) {
+                leftExpr = "(" + leftExpr + ")";
+            }
+
+            string rightExpr = right->expr;
+            if (right->prec < currPrec || (right->prec == currPrec && (c == '-' || c == '/'))) {
+                rightExpr = "(" + rightExpr + ")";
+            }
+
+            string expr = leftExpr + c + rightExpr;
+            s.push(expr, currPrec);
+
+            delete left;
+            delete right;
+        }
+    }
+
+    Node* result = s.pop();
+    cout << result->expr << endl;
+    delete result;
 
     return 0;
 }
