@@ -16,6 +16,7 @@ struct Queue {
 
     void enqueue(Process* p) {
         // TODO
+        p -> next = nullptr;
         if (isEmpty()) {
             front = p;
             rear = p;

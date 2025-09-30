@@ -28,17 +28,23 @@ struct List {
 
     void remove(int val) {
         // TODO
+        if (head == nullptr) {
+            return;
+        }
         Node* cursor = head;
         if (cursor -> data == val) {
             head = cursor -> next;
             delete cursor;
         }
         else {
-            while (cursor -> next -> data != val) {
-                cursor = cursor -> next;
+            while (true) {
                 if (cursor -> next == nullptr) {
                     return;
                 }
+                if (cursor -> next -> data == val) {
+                    break;
+                }
+                cursor = cursor -> next;
             }
             Node* target = cursor -> next;
             cursor -> next = target -> next;
@@ -54,11 +60,9 @@ struct List {
             if (cursor -> next != nullptr) {
                 cout << " ";
             }
-            else {
-                cout << "\n";
-            }
             cursor = cursor -> next;
         }
+        cout << endl;
     }
 };
 
@@ -67,30 +71,46 @@ List unionList(List& l1, List& l2) {
     List result;
     Node* cursor_l1 = l1.head;
     Node* cursor_l2 = l2.head;
+    auto cursor_move = [](List& l, Node* &cur) {
+        int data = cur -> data;
+        while (cur != nullptr && cur -> data == data) {
+            cur = cur -> next;
+        }
+    };
+    auto flush_left = [&](List& l, Node* &cur) {
+        while (cur != nullptr) {
+            l.append(cur -> data);
+            cur = cur -> next;
+        }
+    };
     while (cursor_l1 != nullptr || cursor_l2 != nullptr) {
-        if (cursor_l1 != nullptr && cursor_l2 != nullptr && cursor_l1 -> data == cursor_l2 -> data) {
-            int data = cursor_l1 -> data;
-            result.append(cursor_l1 -> data);
+        if (cursor_l1 != nullptr && cursor_l2 != nullptr) {
+            int data1 = cursor_l1 -> data, data2 = cursor_l2 -> data;
+            if (data1 == data2) {
+                result.append(data1);
+            }
+            else if (data1 > data2) {
+                result.append(data2);
+                result.append(data1);
+            }
+            else {
+                result.append(data1);
+                result.append(data2);
+            }
         }
         else {
             if (cursor_l1 != nullptr) {
-                result.append(cursor_l1 -> data);
+                flush_left(l1, cursor_l1);
             }
-            if (cursor_l2 != nullptr){
-                result.append(cursor_l2 -> data);
+            else {
+                flush_left(l2, cursor_l2);
             }
         }
         if (cursor_l1 != nullptr) {
-            int data = cursor_l1 -> data;
-            while (cursor_l1 != nullptr && cursor_l1 -> data == data) {
-                cursor_l1 = cursor_l1 ->next;
-            }
+            cursor_move(l1, cursor_l1);
         }
         if (cursor_l2 != nullptr) {
-            int data = cursor_l2 -> data;
-            while (cursor_l2 != nullptr && cursor_l2 -> data == data) {
-                cursor_l2 = cursor_l2 ->next;
-            }
+            cursor_move(l2, cursor_l2);
         }
     }
     return result;
@@ -101,33 +121,24 @@ List intersectionList(List& l1, List& l2) {
     List result;
     Node* cursor_l1 = l1.head;
     Node* cursor_l2 = l2.head;
-    while (cursor_l1 != nullptr && cursor_l2 != nullptr) {
-        if (cursor_l1 -> data == cursor_l2 -> data) {
-            result.append(cursor_l1 -> data);
-            {
-                int data = cursor_l1 -> data;
-                while (cursor_l1 != nullptr && cursor_l1 -> data == data) {
-                    cursor_l1 = cursor_l1 ->next;
-                }
-            }
-            {
-                int data = cursor_l2 -> data;
-                while (cursor_l2 != nullptr && cursor_l2 -> data == data) {
-                    cursor_l2 = cursor_l2 ->next;
-                }
-            }
+    auto cursor_move = [](List& l, Node* &cur) {
+        int data = cur -> data;
+        while (cur != nullptr && cur -> data == data) {
+            cur = cur -> next;
         }
-        else if (cursor_l1 -> data > cursor_l2 -> data) {
-            int data = cursor_l2 -> data;
-            while (cursor_l2 != nullptr && cursor_l2 -> data == data) {
-                cursor_l2 = cursor_l2 ->next;
-            }
+    };
+    while (cursor_l1 != nullptr && cursor_l2 != nullptr) {
+        int data1 = cursor_l1 -> data, data2 = cursor_l2 -> data;
+        if (data1 == data2) {
+            result.append(data1);
+            cursor_move(l1, cursor_l1);
+            cursor_move(l2, cursor_l2);
+        }
+        else if (data1 > data2) {
+            cursor_move(l2, cursor_l2);
         }
         else {
-            int data = cursor_l1 -> data;
-            while (cursor_l1 != nullptr && cursor_l1 -> data == data) {
-                cursor_l1 = cursor_l1 ->next;
-            }
+            cursor_move(l1, cursor_l1);
         }
     }
     return result;
@@ -136,8 +147,23 @@ List intersectionList(List& l1, List& l2) {
 List differenceList(List& l1, List& l2) {
     // TODO
     Node* cursor = l2.head;
+    auto element_count = [](List& l, int val) {
+        uint count = 0;
+        Node* cur = l.head;
+        while (cur != nullptr) {
+            if (count > 0 && cur -> data != val) {
+                break;
+            }
+            count += (cur -> data == val);
+            cur = cur -> next;
+        }
+        return count;
+    };
     while (cursor != nullptr) {
-        l1.remove(cursor -> data);
+        int val = cursor -> data;
+        for (int i = 0, c = element_count(l1, val); i < c; i++) {
+            l1.remove(cursor -> data);
+        }
         cursor = cursor -> next;
     }
     return l1;
