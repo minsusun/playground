@@ -79,7 +79,7 @@ List unionList(List& l1, List& l2) {
     };
     auto flush_left = [&](List& l, Node* &cur) {
         while (cur != nullptr) {
-            l.append(cur -> data);
+            result.append(cur -> data);
             cur = cur -> next;
         }
     };
@@ -88,14 +88,16 @@ List unionList(List& l1, List& l2) {
             int data1 = cursor_l1 -> data, data2 = cursor_l2 -> data;
             if (data1 == data2) {
                 result.append(data1);
+                cursor_move(l1, cursor_l1);
+                cursor_move(l2, cursor_l2);
             }
             else if (data1 > data2) {
                 result.append(data2);
-                result.append(data1);
+                cursor_move(l2, cursor_l2);
             }
             else {
                 result.append(data1);
-                result.append(data2);
+                cursor_move(l1, cursor_l1);
             }
         }
         else {
@@ -105,12 +107,6 @@ List unionList(List& l1, List& l2) {
             else {
                 flush_left(l2, cursor_l2);
             }
-        }
-        if (cursor_l1 != nullptr) {
-            cursor_move(l1, cursor_l1);
-        }
-        if (cursor_l2 != nullptr) {
-            cursor_move(l2, cursor_l2);
         }
     }
     return result;
