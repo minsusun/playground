@@ -8,7 +8,9 @@ using namespace std;
 void BinaryTree::buildFromInPre(int* inorder, int* preorder, int n) {
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
-    _root = buildFromInPreInternal(inorder, preorder, n);
+    _inOrder = inorder;
+    _numNodes = n;
+    _root = _buildFromInPreInternal(inorder, preorder, n);
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 }
@@ -16,7 +18,9 @@ void BinaryTree::buildFromInPre(int* inorder, int* preorder, int n) {
 void BinaryTree::buildFromInPost(int* inorder, int* postorder, int n) {
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
-
+    _inOrder = inorder;
+    _numNodes = n;
+    _root = _buildFromInPostInternal(inorder, postorder, n);
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 }
@@ -25,14 +29,36 @@ void BinaryTree::buildFromInPost(int* inorder, int* postorder, int n) {
 void BinaryTree::levelWithMaxWidth(int &level_out, int &width_out) {
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
-
+    int* levelMap = new int[_numNodes];
+    _buildLevelMap(_root, levelMap, 0);
+    level_out = 0;
+    width_out = 0;
+    for (int i = 0; i < _numNodes; i++) {
+        int targetLevel = levelMap[i];
+        for (int j = _numNodes - 1; j >= i; j--) {
+            if (levelMap[j] == targetLevel) {
+                int width = j - i;
+                if (width > width_out) {
+                    level_out = targetLevel;
+                    width_out = width;
+                }
+                else if (width == width_out) {
+                    if (targetLevel < level_out) {
+                        level_out = targetLevel;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    delete[] levelMap;
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 }
 
 /////////////////////////////////////////////////////////
 //////////  You can implement any other functions ////////
-int BinaryTree::indexOfValueInInorder(int value, int* order, int n) {
+int BinaryTree::_indexOfValueInInorder(int value, int* order, int n) {
     for (int i = 0; i < n; i++) {
         if (order[i] == value) {
             return i;
@@ -41,7 +67,7 @@ int BinaryTree::indexOfValueInInorder(int value, int* order, int n) {
     return -1;
 }
 
-Node* BinaryTree::buildFromInPreInternal(int* inorder, int* preorder, int n) {
+Node* BinaryTree::_buildFromInPreInternal(int* inorder, int* preorder, int n) {
     if (n <= 0) {
         return NULL;
     }
@@ -49,22 +75,69 @@ Node* BinaryTree::buildFromInPreInternal(int* inorder, int* preorder, int n) {
     int rootValue = preorder[0];
     Node* root = new Node(rootValue);
     
-    int rootIndex = indexOfValueInInorder(rootValue, inorder, n);
-    
+    int rootIndex = _indexOfValueInInorder(rootValue, inorder, n);
+    if (rootIndex == -1) {
+        return NULL;
+    }
 
     int leftSubTreeCount = rootIndex;
     int rightSubTreeCount = n - 1 - leftSubTreeCount;
 
-    root -> left = buildFromInPreInternal(inorder, preorder + 1, leftSubTreeCount);
-    root -> right = buildFromInPreInternal(inorder + leftSubTreeCount + 1, preorder + 1 + leftSubTreeCount, rightSubTreeCount);
+    root -> left = _buildFromInPreInternal(inorder, preorder + 1, leftSubTreeCount);
+    root -> right = _buildFromInPreInternal(inorder + leftSubTreeCount + 1, preorder + 1 + leftSubTreeCount, rightSubTreeCount);
 
     return root;
 }
 
-Node* BinaryTree::buildFromInPostInternal(int* inorder, int* postorder, int n) {
+Node* BinaryTree::_buildFromInPostInternal(int* inorder, int* postorder, int n) {
+    if (n <= 0) {
+        return NULL;
+    }
 
+    int rootValue = postorder[n - 1];
+    Node* root = new Node(rootValue);
+
+    int rootIndex = _indexOfValueInInorder(rootValue, inorder, n);
+    if (rootIndex == -1) {
+        return NULL;
+    }
+
+    int leftSubTreeCount = rootIndex;
+    int rightSubTreeCount = n - 1 - leftSubTreeCount;
+
+    root -> left = _buildFromInPostInternal(inorder, postorder, leftSubTreeCount);
+    root -> right = _buildFromInPostInternal(inorder + leftSubTreeCount + 1, postorder + leftSubTreeCount, rightSubTreeCount);
+
+    return root;
 }
 
+void BinaryTree::debugPrintPostOrder(Node* node) {
+    // Debug function to print the tree in preorder
+    if (!node) return;
+    debugPrintPostOrder(node->left);
+    debugPrintPostOrder(node->right);
+    cout << node->value << " ";
+}
+
+void BinaryTree::debugPrintPreOrder(Node* node) {
+    // Debug function to print the tree in preorder
+    if (!node) return;
+    cout << node->value << " ";
+    debugPrintPreOrder(node->left);
+    debugPrintPreOrder(node->right);
+}
+
+void BinaryTree::_buildLevelMap(Node* node, int* levelMap, int level) {
+    if (!node) return;
+    for (int i = 0; i < _numNodes; i++) {
+        if (_inOrder[i] == node->value) {
+            levelMap[i] = level;
+            break;
+        }
+    }
+    _buildLevelMap(node->left, levelMap, level + 1);
+    _buildLevelMap(node->right, levelMap, level + 1);
+}
 ///////////      End of Implementation      /////////////
 /////////////////////////////////////////////////////////
 
@@ -138,8 +211,12 @@ int main(int argc, char* argv[]) {
     BinaryTree bt;
     if (kind == "PRE") {
         bt.buildFromInPre(inorder, other, nIn);
+        bt.debugPrintPreOrder(bt.getRoot());
+        cout << endl;
     } else { // kind == "POST"
         bt.buildFromInPost(inorder, other, nIn);
+        bt.debugPrintPreOrder(bt.getRoot());
+        cout << endl;
     }
 
     // Calculate level with maximum width

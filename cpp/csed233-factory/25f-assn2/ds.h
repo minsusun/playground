@@ -32,7 +32,8 @@ public:
 
     /////////////////////////////////////////////////////////
     //////  TODO: Add Public members if required ///////////
-
+    void debugPrintPreOrder(Node* node);
+    void debugPrintPostOrder(Node* node);
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 private:
@@ -40,9 +41,12 @@ private:
 
     /////////////////////////////////////////////////////////
     //////  TODO: Add Private members if required ///////////
-    int indexOfValueInInorder(int value, int* order, int n);
-    Node* buildFromInPreInternal(int* inorder, int* preorder, int n);
-    Node* buildFromInPostInternal(int* inorder, int* postorder, int n);
+    int* _inOrder;
+    int _numNodes;
+    int _indexOfValueInInorder(int value, int* order, int n);
+    Node* _buildFromInPreInternal(int* inorder, int* preorder, int n);
+    Node* _buildFromInPostInternal(int* inorder, int* postorder, int n);
+    void _buildLevelMap(Node* node, int* levelMap, int level);
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 
