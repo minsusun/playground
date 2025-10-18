@@ -40,7 +40,9 @@ private:
 
     /////////////////////////////////////////////////////////
     //////  TODO: Add Private members if required ///////////
-
+    int indexOfValueInInorder(int value, int* order, int n);
+    Node* buildFromInPreInternal(int* inorder, int* preorder, int n);
+    Node* buildFromInPostInternal(int* inorder, int* postorder, int n);
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 

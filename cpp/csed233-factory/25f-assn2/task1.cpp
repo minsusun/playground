@@ -8,7 +8,7 @@ using namespace std;
 void BinaryTree::buildFromInPre(int* inorder, int* preorder, int n) {
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
-
+    _root = buildFromInPreInternal(inorder, preorder, n);
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 }
@@ -32,6 +32,38 @@ void BinaryTree::levelWithMaxWidth(int &level_out, int &width_out) {
 
 /////////////////////////////////////////////////////////
 //////////  You can implement any other functions ////////
+int BinaryTree::indexOfValueInInorder(int value, int* order, int n) {
+    for (int i = 0; i < n; i++) {
+        if (order[i] == value) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+Node* BinaryTree::buildFromInPreInternal(int* inorder, int* preorder, int n) {
+    if (n <= 0) {
+        return NULL;
+    }
+
+    int rootValue = preorder[0];
+    Node* root = new Node(rootValue);
+    
+    int rootIndex = indexOfValueInInorder(rootValue, inorder, n);
+    
+
+    int leftSubTreeCount = rootIndex;
+    int rightSubTreeCount = n - 1 - leftSubTreeCount;
+
+    root -> left = buildFromInPreInternal(inorder, preorder + 1, leftSubTreeCount);
+    root -> right = buildFromInPreInternal(inorder + leftSubTreeCount + 1, preorder + 1 + leftSubTreeCount, rightSubTreeCount);
+
+    return root;
+}
+
+Node* BinaryTree::buildFromInPostInternal(int* inorder, int* postorder, int n) {
+
+}
 
 ///////////      End of Implementation      /////////////
 /////////////////////////////////////////////////////////
