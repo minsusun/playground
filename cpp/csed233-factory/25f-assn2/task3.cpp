@@ -76,8 +76,8 @@ void PriorityQueue::upBubble(int index) {
         int t = heap[index].value;
         heap[index].value = heap[parentIndex].value;
         heap[parentIndex].value = t;
+        upBubble(parentIndex);
     }
-    upBubble(parentIndex);
 }
 
 void PriorityQueue::downBubble(int index) {
@@ -94,7 +94,10 @@ void PriorityQueue::downBubble(int index) {
     }
     else {
         int &value = heap[index].value, &lValue = heap[leftIndex].value, &rValue = heap[rightIndex].value;
-        if (value >= lValue && value < rValue) {
+        if (value >= lValue && value >= rValue) {
+            return;
+        }
+        else if (value >= lValue && value < rValue) {
             swap(value, rValue);
             downBubble(rightIndex);
         }
@@ -245,7 +248,6 @@ int main(int argc, char* argv[]) {
             fout << "Error\n";
             return 0;
         }
-        cout << pq.printPQ() << endl;
     }
 
     return 0;
