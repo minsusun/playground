@@ -32,6 +32,7 @@ public:
 
     /////////////////////////////////////////////////////////
     //////  TODO: Add Public members if required ///////////
+    Node* getRoot() const { return _root; }
     void debugPrintPreOrder(Node* node);
     void debugPrintPostOrder(Node* node);
     ///////////      End of Implementation      /////////////
@@ -80,7 +81,7 @@ private:
     int nodeCount;             // assigned node ids: 1..nodeCount
     /////////////////////////////////////////////////////////
     //////  TODO: Add Private members if required ///////////
-
+    int indexMap[MAX_SIZE * 2 + 5];
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 };
@@ -126,7 +127,12 @@ private:
     
     /////////////////////////////////////////////////////////
     //////  TODO: Add Private members if required ///////////
-
+    inline bool isRoot(int i) const { return i == 0; }
+    inline bool isLeaf(int i) const { return left(i) >= size && right(i) >= size; }
+    inline void swap(int &a, int &b) { int c; c = b; b = a; a = c; }
+    void buildFromBinaryTreeInternal(Node* node);
+    void upBubble(int index);
+    void downBubble(int index);
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 };

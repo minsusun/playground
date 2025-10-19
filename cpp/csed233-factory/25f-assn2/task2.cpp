@@ -6,7 +6,17 @@
 void GeneralTree::buildFromSequence(const char* binseq, int len) {
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
-
+    int st[MAX_SIZE + 5];
+    int sp = -1;
+    for (int i = 0; i < len; i++) {
+        if (binseq[i] == '0') {
+            st[++sp] = i + 1;
+        }
+        else {
+            indexMap[i + 1] = st[sp];
+            indexMap[st[sp--]] = i + 1;
+        }
+    }
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 }
@@ -14,7 +24,38 @@ void GeneralTree::buildFromSequence(const char* binseq, int len) {
 void GeneralTree::findRemoval(int X, int Y, int &outEnter, int &outExit) const {
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
+    // SAME POTATO, REMOVE ONLY ONE
+    if (indexMap[X] == Y) {
+        outEnter = max(X, Y);
+        outExit = max(X, Y);
+        return;
+    }
 
+    int XEnter = min(X, indexMap[X]), XExit = max(X, indexMap[X]);
+    int YEnter = min(Y, indexMap[Y]), YExit = max(Y, indexMap[Y]);
+
+    // Y beloongs to subtree of X, REMOVE X
+    if (XEnter < YEnter && XExit > YExit) {
+        outEnter = XEnter;
+        outExit = XExit;
+    }
+    // X beloongs to subtree of Y, REMOVE Y
+    else if (XEnter > YEnter && XExit < YExit) {
+        outEnter = YEnter;
+        outExit = YExit;
+    }
+    // FIND LCA
+    else {
+        int left = min(XEnter, YEnter);
+        int right = max(XExit, YExit);
+        int cursor = left - 1;
+        while (true) {
+            if (cursor < left && indexMap[cursor] > right) break;
+            cursor --;
+        }
+        outEnter = cursor;
+        outExit = indexMap[cursor];
+    }
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 }

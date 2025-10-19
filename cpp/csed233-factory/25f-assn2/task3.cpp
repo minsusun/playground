@@ -11,36 +11,40 @@ void PriorityQueue::buildFromBinaryTree(const BinaryTree& bt) {
     clear();
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
-
+    buildFromBinaryTreeInternal(bt.getRoot());
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 }
 
 bool PriorityQueue::insert(int value) {
-    if (...) return false; // TODO: fill in the condition
+    // if (...) return false; // TODO: fill in the condition
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
-
+    heap[size++].value = value;
+    upBubble(size - 1);
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
     return true;
 }
 
 bool PriorityQueue::deleteMax() {
-    if (...) return false; // TODO: fill in the condition
+    if (empty()) return false; // TODO: fill in the condition
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
-
+    heap[0] = heap[size - 1];
+    size--;
+    downBubble(0);
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
     return true;
 }
 
 bool PriorityQueue::changeMax(int target) {
-    if (...) return false; // TODO: fill in the condition
+    if (empty()) return false; // TODO: fill in the condition
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
-
+    heap[0].value = target;
+    downBubble(0);
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
     return true;
@@ -49,14 +53,62 @@ bool PriorityQueue::changeMax(int target) {
 pq_element PriorityQueue::getMax() {
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
-
+    return heap[0];
     ///////////      End of Implementation      /////////////
     /////////////////////////////////////////////////////////
 }
 
 /////////////////////////////////////////////////////////
 //////////  You can implement any other functions ////////
+void PriorityQueue::buildFromBinaryTreeInternal(Node* node) {
+    if (node == NULL) return;
+    buildFromBinaryTreeInternal(node -> left);
+    buildFromBinaryTreeInternal(node -> right);
+    insert(node -> value);
+}
 
+void PriorityQueue::upBubble(int index) {
+    if (isRoot(index)) {
+        return;
+    }
+    int parentIndex = parent(index);
+    if (heap[index].value > heap[parentIndex].value) {
+        int t = heap[index].value;
+        heap[index].value = heap[parentIndex].value;
+        heap[parentIndex].value = t;
+    }
+    upBubble(parentIndex);
+}
+
+void PriorityQueue::downBubble(int index) {
+    if (isLeaf(index)) {
+        return;
+    }
+    int leftIndex = left(index), rightIndex = right(index);
+    int &value = heap[index].value;
+    if (rightIndex >= size) {
+        if (value < heap[leftIndex].value) {
+            swap(value, heap[leftIndex].value);
+            downBubble(leftIndex);
+        }
+    }
+    else {
+        int &value = heap[index].value, &lValue = heap[leftIndex].value, &rValue = heap[rightIndex].value;
+        if (value >= lValue && value < rValue) {
+            swap(value, rValue);
+            downBubble(rightIndex);
+        }
+        else if (value >= rValue && value < lValue) {
+            swap(value, lValue);
+            downBubble(leftIndex);
+        }
+        else {
+            int targetIndex = (rValue > lValue) ? rightIndex : leftIndex;
+            swap(value, heap[targetIndex].value);
+            downBubble(targetIndex);
+        }
+    }
+}
 ///////////      End of Implementation      /////////////
 /////////////////////////////////////////////////////////
 
@@ -193,6 +245,7 @@ int main(int argc, char* argv[]) {
             fout << "Error\n";
             return 0;
         }
+        cout << pq.printPQ() << endl;
     }
 
     return 0;
