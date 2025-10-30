@@ -20,6 +20,9 @@ bool PriorityQueue::insert(int value) {
     // if (...) return false; // TODO: fill in the condition
     /////////////////////////////////////////////////////////
     //////////  TODO: Implement From Here      //////////////
+    if (size >= MAX_SIZE) {
+        return false;
+    }
     heap[size++].value = value;
     upBubble(size - 1);
     ///////////      End of Implementation      /////////////
