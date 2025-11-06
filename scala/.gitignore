@@ -1,0 +1,35 @@
+# SBT
+.bloop/
+.sbt/
+.sbt_cache/
+project/target/
+target/
+
+# Scala
+.idea/
+.metals/
+.vscode/
+.DS_Store
+*.log
+*.class
+*.jar
+*.war
+*.zip
+*.tar.gz
+*.bak
+*.swp
+*~
+# For IntelliJ IDEA users
+.idea/
+.idea_modules/
+.iml
+*.ipr
+*.iws
+
+# For VS Code users
+.vscode/
+
+# For Eclipse users
+.classpath
+.project
+.settings/
