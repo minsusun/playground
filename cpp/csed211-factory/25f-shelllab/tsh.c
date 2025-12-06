@@ -165,6 +165,46 @@ int main(int argc, char **argv)
 */
 void eval(char *cmdline) 
 {
+    int bg;
+    char *argv[MAXARGS];
+    pid_t pid;
+    sigset_t mask_all, mask_child, mask_prev;
+
+    bg = parseline(cmdline, argv);
+
+    if (argv[0] == NULL) return;
+
+    if (builtin_cmd(argv)) return;
+
+    if (sigfillset(&mask_all) < 0) unix_error("eval: sigfillset error");
+    if (sigemptyset(&mask_child) < 0) unix_error("eval: sigemptyset error");
+    if (sigaddset(&mask_child, SIGCHLD) < 0) unix_error("eval: sigaddset error");
+
+    if (sigprocmask(SIG_BLOCK, &mask_child, &mask_prev) < 0) unix_error("eval: sigprocmask(SIG_BLOCK) error");
+
+    pid = fork();
+    if (pid < 0) unix_error("eval: fork error");
+    else if (pid == 0) {
+        if (setpgid(0, 0) < 0) unix_error("eval: setpgid error");
+        
+        if (sigprocmask(SIG_SETMASK, &mask_prev, NULL) < 0) unix_error("eval: sigprocmask(SIG_SETMASK) error");
+        
+        if (execve(argv[0], argv, environ) < 0)
+        {
+            printf("%s: Command not found\n", argv[0]);
+            exit(127);
+        }
+    }
+
+    if (sigprocmask(SIG_BLOCK, &mask_all, NULL) < 0) unix_error("eval: sigprocmask(SIG_BLOCK) error");
+
+    addjob(jobs, pid, !bg ? FG : BG, cmdline);
+
+    if (sigprocmask(SIG_SETMASK, &mask_prev, NULL) < 0) unix_error("eval: sigprocmask(SIG_SETMASK) error");
+
+    if (bg) printf("[%d] (%d) %s", pid2jid(pid), pid, cmdline);
+    else waitfg(pid);
+
     return;
 }
 
@@ -231,6 +271,17 @@ int parseline(const char *cmdline, char **argv)
  */
 int builtin_cmd(char **argv) 
 {
+    if (!strcmp(argv[0], "quit")) exit(0);
+    else if (!strcmp(argv[0], "jobs"))
+    {
+        listjobs(jobs);
+        return 1;
+    }
+    else if (!strcmp(argv[0], "fg") || !strcmp(argv[0], "bg"))
+    {
+        do_bgfg(argv);
+        return 1;
+    }
     return 0;     /* not a builtin command */
 }
 
@@ -239,6 +290,49 @@ int builtin_cmd(char **argv)
  */
 void do_bgfg(char **argv) 
 {
+    if (argv[1] == NULL)
+    {
+        printf("%s command requires PID or %%jobid argument\n", argv[0]);
+        return;
+    }
+
+    pid_t pid;
+    int jid;
+    int fg = (strcmp(argv[0], "fg") == 0);
+    struct job_t *job;
+
+    if (argv[1][0] == '%')
+    {
+        jid = atoi(argv[1] + 1);
+        job = getjobjid(jobs, jid);
+        if(job == NULL)
+        {
+            printf("%s: No such job\n", argv[1]);
+            return;
+        }
+    }
+    else if (isdigit(argv[1][0]))
+    {
+        pid = atoi(argv[1]);
+        job = getjobpid(jobs, pid);
+        if(job == NULL)
+        {
+            printf("(%s): No such process\n", argv[1]);
+            return;
+        }
+    }
+    else
+    {
+        printf("%s: argument must be a PID or %%jobid\n", argv[0]);
+        return;
+    }
+
+    job -> state = fg ? FG : BG;
+    if(kill(-(job -> pid), SIGCONT) < 0) unix_error("do_bgfg: kill(SIGCONT) error");
+
+    if(fg) waitfg(job -> pid);
+    else printf("[%d] (%d) %s", job -> jid, job -> pid, job -> cmdline); 
+
     return;
 }
 
@@ -247,6 +341,7 @@ void do_bgfg(char **argv)
  */
 void waitfg(pid_t pid)
 {
+    while (pid == fgpid(jobs)) sleep(1);
     return;
 }
 
@@ -263,6 +358,24 @@ void waitfg(pid_t pid)
  */
 void sigchld_handler(int sig) 
 {
+    int status;
+    pid_t pid;
+
+    while ((pid = waitpid(-1, &status, (WNOHANG | WUNTRACED))) > 0)
+    {
+        if (WIFEXITED(status)) deletejob(jobs, pid);
+        else if (WIFSIGNALED(status))
+        {
+            printf("Job [%d] (%d) terminated by signal %d\n", pid2jid(pid), pid, WTERMSIG(status));
+            deletejob(jobs, pid);
+        }
+        else if (WIFSTOPPED(status))
+        {
+            getjobpid(jobs, pid) -> state = ST;
+            printf("Job [%d] (%d) stopped by signal %d\n", pid2jid(pid), pid, WSTOPSIG(status));
+        }
+    }
+
     return;
 }
 
@@ -273,6 +386,9 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig) 
 {
+    pid_t pid = fgpid(jobs);
+    if (pid <= 0) return;
+    if (kill(-pid, sig) < 0) unix_error("sigint_handler: Kill(SIGINT) error");
     return;
 }
 
@@ -283,6 +399,9 @@ void sigint_handler(int sig)
  */
 void sigtstp_handler(int sig) 
 {
+    pid_t pid = fgpid(jobs);
+    if (pid <= 0) return;
+    if (kill(-pid, sig) < 0) unix_error("sigint_handler: Kill(SIGINT) error");
     return;
 }
 
