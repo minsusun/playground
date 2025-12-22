@@ -153,45 +153,35 @@ void *mm_realloc(void *ptr, size_t size)
         return NULL;
     }
     
-    void *bp, *next_bp;
     size_t current_size = GET_SIZE(HDRP(ptr)), requested_size = MAX(ALIGN(size) + DSIZE, 4 * WSIZE);
-    if (requested_size >= current_size)
+
+    if (current_size >= requested_size)
+        return ptr;
+
+    void *next_bp = NEXT_BLKP(ptr);
+    size_t next_size = GET_SIZE(HDRP(next_bp)), new_size = current_size + next_size;
+    if (next_size == 0)
     {
-        next_bp = HDRP(NEXT_BLKP(ptr));
-        size_t new_size = current_size + GET_SIZE(next_bp);
-        if (!GET_ALLOC(next_bp) && new_size >= requested_size)
-        {
-            list_remove(NEXT_BLKP(ptr));
-            PUT(HDRP(ptr), PACK(requested_size, 1));
-            PUT(FTRP(ptr), PACK(requested_size, 1));
-            bp = NEXT_BLKP(ptr);
-            PUT(HDRP(bp), PACK(new_size - requested_size, 1));
-            PUT(FTRP(bp), PACK(new_size - requested_size, 1));
-            mm_free(bp);
-            return ptr;
-        }
-        else
-        {
-            bp = mm_malloc(requested_size);
-            if (bp == NULL)
-                return NULL;
-            memcpy(bp, ptr, current_size);
-            mm_free(ptr);
-            return bp;
-        }
+        if (extend_heap(MAX(requested_size - current_size, CHUNKSIZE) / WSIZE) == NULL)
+            return NULL;
+        new_size = current_size + GET_SIZE(HDRP(next_bp));
+    }
+
+    if (!GET_ALLOC(HDRP(next_bp)) && new_size >= requested_size)
+    {
+        list_remove(NEXT_BLKP(ptr));
+        PUT(HDRP(ptr), PACK(new_size, 1));
+        PUT(FTRP(ptr), PACK(new_size, 1));
+        return ptr;
     }
     else
     {
-        if (size > 4 * WSIZE && current_size - requested_size > 4 * WSIZE)
-        {
-            PUT(HDRP(ptr), PACK(requested_size, 1));
-            PUT(FTRP(ptr), PACK(requested_size, 1));
-            bp = NEXT_BLKP(ptr);
-            PUT(HDRP(bp), PACK(current_size - requested_size, 1));
-            PUT(FTRP(bp), PACK(current_size - requested_size, 1));
-            mm_free(bp);
-        }
-        return ptr;
+        void *bp = mm_malloc(requested_size);
+        if (bp == NULL)
+            return NULL;
+        memcpy(bp, ptr, current_size);
+        mm_free(ptr);
+        return bp;
     }
 }
 
