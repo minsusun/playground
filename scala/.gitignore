@@ -33,6 +33,7 @@ gradle-app.setting
 .bloop/
 .sbt/
 .sbt_cache/
+.bsp/
 project/target/
 target/
 
