@@ -8,5 +8,9 @@ object Main {
     for(i <- segment_list.indices) {
       println(s"$i : ${segment_list(i)}")
     }
+    val acc = segment_list.takeRight(3).map {
+      e => e.split(" ").map(_.toInt).toList
+    }
+    println(acc)
   }
 }
